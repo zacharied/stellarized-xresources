@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Generates X resource files for the stellarized vim colorscheme, available at
+# https://github.com/nightsense/stellarized.
+
+readonly dark_url='https://raw.githubusercontent.com/nightsense/stellarized/master/colors/stellarized_dark.vim' 
+readonly light_url='https://raw.githubusercontent.com/nightsense/stellarized/master/colors/stellarized_light.vim' 
+
+get_colors() {
+    local -i count=0
+    while read -r line; do
+        printf '#define color_%d %s\n' "$count" "$(echo "$line" | cut -d \' -f 2)"
+        count+=1
+    done < <(curl "$1" 2>/dev/null | grep -E 'let g:terminal_color_[[:digit:]]+\s*= '\''#[[:xdigit:]]{6}'\''$')
+
+    for (( i = 0; i < 16; i++ )); do
+        printf '*color%d: color_%d\n' "$i" "$i"
+    done
+}
+
+output_file() {
+    printf '! This file was automatically generated. Do not edit it.\n\n'
+
+    get_colors "$1"
+
+    if [[ "$1" == "$dark_url" ]]; then
+        printf '*background: color_8\n*foreground: color_12\n'
+    elif [[ "$1" == "$light_url" ]]; then
+        printf '*background: color_15\n*foreground: color_11\n'
+    fi
+}
+
+printf 'Generating dark colorscheme.\n'
+output_file "$dark_url" > "Xresources.stellarized_dark"
+
+printf 'Generating light colorscheme.\n'
+output_file "$light_url" > "Xresources.stellarized_light"
