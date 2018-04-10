@@ -5,6 +5,17 @@
 readonly dark_url='https://raw.githubusercontent.com/nightsense/stellarized/master/colors/stellarized_dark.vim' 
 readonly light_url='https://raw.githubusercontent.com/nightsense/stellarized/master/colors/stellarized_light.vim' 
 
+# Parse options.
+if [[ "$1" == -d ]]; then
+    shift
+    if [[ $# -eq 1 ]]; then
+        readonly target_dir="$1/"
+    else
+        printf 'invalid arguments' >&2
+        exit 1
+    fi
+fi
+
 get_colors() {
     local -i count=0
     while read -r line; do
@@ -22,15 +33,11 @@ output_file() {
 
     get_colors "$1"
 
-    if [[ "$1" == "$dark_url" ]]; then
-        printf '*background: color_8\n*foreground: color_12\n'
-    elif [[ "$1" == "$light_url" ]]; then
-        printf '*background: color_15\n*foreground: color_11\n'
-    fi
+    printf '*background: color_8\n*foreground: color_12\n'
 }
 
 printf 'Generating dark colorscheme.\n'
-output_file "$dark_url" > "Xresources.stellarized_dark"
+output_file "$dark_url" > "${target_dir}Xresources.stellarized_dark"
 
 printf 'Generating light colorscheme.\n'
-output_file "$light_url" > "Xresources.stellarized_light"
+output_file "$light_url" > "${target_dir}Xresources.stellarized_light"
